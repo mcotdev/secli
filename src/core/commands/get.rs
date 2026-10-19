@@ -1,33 +1,27 @@
-use crate::{cli::app::App, core::db::get_secret};
 use anyhow::Result;
-use clap::Values;
-use colored::Colorize;
-use inquire::Text;
 use rusqlite::Connection;
+use serde_json::json;
 
-pub fn get(app: App, args: Option<Values<'_>>) -> Result<()> {
-    let conn = Connection::open(app.db_path).unwrap();
+use super::pick_name;
+use crate::core::{clip, db};
 
-    let mut args = args.unwrap_or_default();
+pub fn get(
+    conn: &Connection,
+    name: Option<String>,
+    copy: bool,
+    clear_after: u64,
+    as_json: bool,
+) -> Result<()> {
+    let name = pick_name(conn, name, "Which secret do you want?")?;
+    let value = db::get_secret(conn, &name)?;
 
-    let name: String = if args.len() == 0 {
-        match Text::new("Name:").prompt() {
-            Ok(name) => name,
-            Err(_) => return Ok(()),
-        }
+    if copy {
+        return clip::copy_and_clear(&value, clear_after);
+    }
+    if as_json {
+        println!("{}", json!({ "name": name, "value": &*value }));
     } else {
-        args.next().unwrap().to_string()
-    };
-
-    let value = match get_secret(&conn, &name) {
-        Ok(value) => value,
-        Err(err) => {
-            println!("{}", err.to_string().red());
-            return Ok(());
-        }
-    };
-
-    println!("{}", value);
-
+        println!("{}", *value);
+    }
     Ok(())
 }

@@ -1,13 +1,29 @@
-use crate::core::db;
+mod cli;
+mod core;
 
-use anyhow::Result;
-use cli::app::App;
+use std::io::{IsTerminal, stdout};
+use std::process::ExitCode;
 
-pub mod cli;
-pub mod core;
+use clap::{CommandFactory, Parser};
+use colored::Colorize;
 
-fn main() -> Result<()> {
-    db::create_db();
+use crate::core::prompt::Cancelled;
 
-    App::new().run()
+fn main() -> ExitCode {
+    // Handles shell completion requests (`COMPLETE=bash secli ...`) and exits.
+    clap_complete::CompleteEnv::with_factory(cli::Cli::command).complete();
+
+    let cli = cli::Cli::parse();
+    if !stdout().is_terminal() {
+        colored::control::set_override(false);
+    }
+
+    match cli.run() {
+        Ok(()) => ExitCode::SUCCESS,
+        Err(err) if err.is::<Cancelled>() => ExitCode::from(130),
+        Err(err) => {
+            eprintln!("{} {err:#}", "Error:".red().bold());
+            ExitCode::FAILURE
+        }
+    }
 }

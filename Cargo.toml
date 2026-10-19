@@ -8,23 +8,31 @@ readme = "README.md"
 homepage = "https://github.com/AnishDe12020/secli#readme"
 keywords = ["secrets", "keys", "secret-management"]
 categories = ["command-line-utilities", "command-line-interface"]
-version = "1.0.0"
-edition = "2021"
+version = "2.0.0"
+edition = "2024"
+rust-version = "1.88"
 
 [[bin]]
 name = "secli"
 path = "src/main.rs"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
-anyhow = "1.0.57"
-dirs = "4.0.0"
-rusqlite = { version = "0.27.0", features = ["bundled"] }
-inquire = "0.2.1"
-colored = "2.0.0"
+anyhow = "1.0.104"
+arboard = { version = "3.7", features = ["wayland-data-control"] }
+clap = { version = "4.6", features = ["derive"] }
+clap_complete = { version = "4.6", features = ["unstable-dynamic"] }
+colored = "3.1"
+ctrlc = "3.5"
+dirs = "7.0"
+getrandom = "0.4"
+inquire = "0.9"
+keyring = "4.2"
+rusqlite = { version = "0.40", features = ["bundled-sqlcipher-vendored-openssl"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+zeroize = { version = "1.9", features = ["serde"] }
 
-[dependencies.clap]
-version = "3.1.18"
-features = ["cargo", "std", "color"]
-default-features = false
+[dev-dependencies]
+assert_cmd = "2.2"
+predicates = "3"
+tempfile = "3"
